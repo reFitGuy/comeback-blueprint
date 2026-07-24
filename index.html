@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0F2536" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Comeback Blueprint" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<title>Comeback Blueprint v0.2.0 Beta</title>
+<style>
+:root{
+  --bg:#0F2536; --panel:#142F43; --panel2:#10293A; --line:#4cc8d61f;
+  --text:#F2F3EE; --muted:#AEC0C9; --cyan:#77D8E5; --orange:#FF8C42;
+  --green:#6DBB8A; --rust:#C86F52; --ink:#07151F; --shadow:0 12px 30px #0008;
+  --display:"Arial Narrow","Space Grotesk",system-ui,sans-serif;
+  --body:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);scroll-behavior:smooth}
+body{
+  margin:0;color:var(--text);font-family:var(--body);font-size:17px;line-height:1.45;
+  background-color:var(--bg);
+  background-image:
+    linear-gradient(var(--line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--line) 1px,transparent 1px),
+    linear-gradient(#4cc8d60d 1px,transparent 1px),
+    linear-gradient(90deg,#4cc8d60d 1px,transparent 1px);
+  background-size:32px 32px,32px 32px,8px 8px,8px 8px;
+  min-height:100vh;padding-bottom:calc(28px + env(safe-area-inset-bottom));
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{color:var(--cyan)}
+.app{width:min(1120px,100%);margin:0 auto;padding:12px}
+.title-block{
+  position:relative;border:1px solid #77d8e577;background:#0c2130e8;
+  padding:20px 18px 16px;margin-top:calc(8px + env(safe-area-inset-top));box-shadow:var(--shadow)
+}
+.title-block:before,.title-block:after,.card:before,.card:after{
+  content:"";position:absolute;width:18px;height:18px;border-color:var(--cyan)
+}
+.title-block:before,.card:before{left:-3px;top:-3px;border-left:3px solid;border-top:3px solid}
+.title-block:after,.card:after{right:-3px;bottom:-3px;border-right:3px solid;border-bottom:3px solid}
+.kicker,.eyebrow{font:700 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+h1,h2,h3{font-family:var(--display);letter-spacing:.02em}
+h1{font-size:clamp(30px,8vw,52px);line-height:1;margin:6px 0}
+h2{font-size:26px;margin:0}
+h3{font-size:21px;margin:0}
+.subtitle{color:var(--muted);max-width:780px}
+.top-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.chip{border:1px solid #77d8e555;padding:6px 9px;font:700 12px var(--mono);background:#10293acc}
+.notice{margin:12px 0;padding:12px 14px;border-left:4px solid var(--rust);background:#3a211f99;color:#f4d4c9}
+.notice.ok{border-color:var(--green);background:#173b2a99}
+.week-wrap{margin:16px 0 10px;overflow-x:auto;padding-bottom:8px}
+.week-strip{display:flex;min-width:max-content;border-bottom:2px solid #77d8e555;padding:0 8px}
+.week-btn{
+  position:relative;background:transparent;border:0;color:var(--muted);padding:20px 14px 9px;
+  min-width:58px;font:800 14px var(--mono)
+}
+.week-btn:before{content:"";position:absolute;top:2px;left:50%;width:1px;height:12px;background:#77d8e588}
+.week-btn:nth-child(odd):before{height:18px}
+.week-btn.active{color:var(--orange)}
+.week-btn.active:after{content:"";position:absolute;left:8px;right:8px;bottom:-2px;height:4px;background:var(--orange)}
+.week-btn[data-phase="reactivation"]{border-top:3px solid #7c93a2}
+.week-btn[data-phase="foundation"]{border-top:3px solid var(--cyan)}
+.week-btn[data-phase="accumulation"]{border-top:3px solid var(--green)}
+.week-btn[data-phase="intensification"]{border-top:3px solid var(--orange)}
+.phase-banner{
+  display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;border:1px solid #77d8e544;
+  background:#0c2130d8;padding:12px 14px;margin-bottom:12px
+}
+.phase-number{font:900 30px var(--mono);color:var(--orange)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:6px 0 12px}
+.tab{
+  flex:0 0 auto;border:1px solid #77d8e555;background:#10293acc;color:var(--text);
+  padding:10px 13px;font-weight:800
+}
+.tab.active{border-color:var(--orange);color:var(--orange);box-shadow:inset 0 -3px var(--orange)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.toolbar button{border:1px solid #77d8e555;background:#142f43;color:var(--text);padding:8px 10px}
+.pair{
+  border:1px dashed #77d8e577;background:#0d2231c7;margin:12px 0 18px;padding:12px;
+  position:relative
+}
+.pair-label{font:900 13px var(--mono);color:var(--orange);text-transform:uppercase;letter-spacing:.12em}
+.pair-instruction{color:var(--muted);font-size:14px;margin:4px 0 12px}
+.cards{display:grid;gap:14px}
+.card{
+  position:relative;background:linear-gradient(180deg,#16354aee,#10293aee);
+  border:1px solid #77d8e555;padding:16px;box-shadow:0 8px 22px #0005
+}
+.card.ready{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange),0 10px 26px #0006}
+.card.solid{border-color:var(--green)}
+.card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.card-title small{display:block;font:700 11px var(--mono);color:var(--cyan);text-transform:uppercase;margin-top:3px}
+.badge{
+  display:inline-block;font:900 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 8px;border:2px solid currentColor
+}
+.badge.ready{color:var(--orange);transform:rotate(-3deg)}
+.badge.hard{color:var(--rust)}
+.badge.fast{color:var(--orange);transform:rotate(-3deg)}
+.badge.solid{color:var(--green)}
+.spec-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.spec{border:1px solid #77d8e533;background:#0b2130aa;padding:9px}
+.spec b{display:block;font:800 11px var(--mono);text-transform:uppercase;color:var(--cyan)}
+.spec span{font:700 15px var(--mono)}
+.desc{color:#e0e8e8}
+.detail-toggle{border:0;background:transparent;color:var(--cyan);padding:4px 0;font-weight:800}
+.details{display:none;border-left:2px solid #77d8e555;padding-left:12px;margin:8px 0}
+.details.open{display:block}
+.warmup{background:#152839;border-left:3px solid var(--cyan);padding:9px 11px;margin:10px 0}
+.variation{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border-top:1px dashed #77d8e555;border-bottom:1px dashed #77d8e555;padding:10px 0;margin:10px 0}
+.variation button{border:1px solid #77d8e555;background:#0d2231;color:var(--text);padding:8px}
+.variation button:disabled{opacity:.35;cursor:not-allowed}
+.variation-select{min-width:min(100%,320px);flex:1}.equipment-note{font:700 12px var(--mono);color:var(--muted);margin-top:5px}.locked-note{color:var(--orange)}
+.var-count{font:800 12px var(--mono);color:var(--muted)}
+.sets{display:grid;grid-template-columns:1fr;gap:10px}
+.set-row{
+  display:grid;grid-template-columns:52px 1fr 1fr;gap:8px;align-items:end;
+  border:1px solid #77d8e533;background:#0b2130aa;padding:10px
+}
+.set-label{font:900 14px var(--mono);color:var(--orange)}
+label{font-size:12px;color:var(--muted);font-weight:700}
+input[type="number"],select,textarea{
+  width:100%;background:#081c29;color:var(--text);border:1px solid #77d8e555;
+  border-radius:0;padding:10px;font-family:var(--mono);font-size:16px
+}
+.actions{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px}
+.solid-toggle{display:flex;gap:8px;align-items:center;font-weight:800;color:var(--green)}
+.save-state{font:700 12px var(--mono);color:var(--muted)}
+.progress-message{margin-top:10px;padding:10px;border-left:3px solid var(--cyan);background:#0b2130}
+.progress-message.ready{border-color:var(--orange)}
+.progress-message.hard{border-color:var(--rust)}
+.progress-message.fast{border-color:var(--orange)}
+.rules,.safety,.recovery,.summary{
+  background:#0c2130df;border:1px solid #77d8e555;padding:16px;margin:16px 0
+}
+.rules ol{padding-left:22px}
+.safety{border-left:5px solid var(--rust)}
+.recovery-step{margin:12px 0;border-left:3px solid var(--cyan);padding-left:12px}
+.recovery-grid{display:grid;gap:10px}
+.check-item{display:flex;gap:10px;align-items:flex-start;background:#10293acc;border:1px solid #77d8e533;padding:10px}
+.check-item input{margin-top:5px;transform:scale(1.25)}
+.stiffness{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.stiffness button{background:#10293a;color:var(--text);border:1px solid #77d8e555;padding:10px;font:800 16px var(--mono)}
+.stiffness button.active{border-color:var(--orange);color:var(--orange);background:#4a2b19}
+.summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.metric{background:#10293a;border:1px solid #77d8e533;padding:12px}
+.metric b{display:block;font:900 24px var(--mono);color:var(--orange)}
+.footer{color:var(--muted);font-size:13px;padding:12px 0 24px}
+.hidden{display:none!important}
+@media(min-width:720px){
+  body{font-size:16px}.app{padding:20px}.cards.two{grid-template-columns:1fr 1fr}
+  .sets{grid-template-columns:1fr 1fr}.summary-grid{grid-template-columns:repeat(4,1fr)}
+}
+
+/* v0.2.0 Beta — workout-first experience */
+:root{--nav-h:72px}
+body{padding-bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom))}
+.app{max-width:760px}
+.title-block{padding:15px 16px;margin-top:calc(4px + env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;gap:12px}
+.title-copy h1{font-size:clamp(25px,7vw,36px);margin:3px 0}.title-copy .subtitle{font-size:13px}.title-block .kicker{font-size:10px}
+.version-badge{flex:0 0 auto;border:1px solid var(--orange);color:var(--orange);padding:6px 8px;font:800 11px var(--mono);white-space:nowrap}
+.top-meta,.rules,.safety{display:none}
+.week-wrap{margin-top:12px}.phase-banner{margin-bottom:8px}.tabs{padding-bottom:8px}
+.toolbar{display:none}
+.bottom-nav{position:fixed;z-index:50;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);background:#071925f2;border-top:1px solid #77d8e555;padding:8px 8px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(12px)}
+.bottom-nav button{border:0;background:transparent;color:var(--muted);padding:7px 3px;font:800 11px var(--mono)}
+.bottom-nav button.active{color:var(--orange)}.bottom-nav .nav-icon{display:block;font-size:20px;line-height:1.1;margin-bottom:3px}
+.hero{background:linear-gradient(180deg,#16354aee,#10293aee);border:1px solid #77d8e555;padding:22px 18px;margin:12px 0;box-shadow:var(--shadow)}
+.hero h2{font-size:32px;margin:5px 0}.hero-focus{border-left:3px solid var(--orange);padding-left:12px;margin:18px 0;color:#e5eeee}
+.primary{width:100%;border:1px solid var(--orange);background:var(--orange);color:#15202a;padding:15px;font:900 15px var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.secondary{border:1px solid #77d8e555;background:#10293a;color:var(--text);padding:11px 14px;font-weight:800}
+.guided-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 0}.guided-progress{height:6px;background:#0b1c28;border:1px solid #77d8e533;flex:1}.guided-progress span{display:block;height:100%;background:var(--orange)}
+.guided-card .sets{grid-template-columns:1fr}.guided-card .set-row{grid-template-columns:60px 1fr 1fr;padding:13px}.guided-card input,.guided-card select{min-height:48px;font-size:18px}
+.guided-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.guided-actions button:last-child{background:var(--orange);color:#15202a;border-color:var(--orange)}
+.complete-screen{text-align:center;padding:38px 18px}.complete-mark{font-size:58px;color:var(--green)}
+.section-title{margin:18px 0 10px}.history-item,.library-item,.settings-card{background:#10293acc;border:1px solid #77d8e533;padding:14px;margin:9px 0}
+.history-item{display:flex;justify-content:space-between;gap:12px}.status-done{color:var(--green);font-weight:900}.status-open{color:var(--muted)}
+.library-item summary{cursor:pointer;font-weight:900}.library-item p{color:var(--muted)}
+.settings-card button{width:100%;margin:5px 0}.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.about-grid div{background:#0b2130;padding:10px;border:1px solid #77d8e22}.about-grid b{display:block;color:var(--cyan);font:700 11px var(--mono);text-transform:uppercase}
+.footer{text-align:center;padding-bottom:8px}.desktop-only{display:none}
+@media(min-width:720px){.guided-card .sets{grid-template-columns:1fr 1fr}.bottom-nav{left:50%;transform:translateX(-50%);max-width:760px}}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="title-block">
+    <div class="title-copy">
+      <div class="kicker">12-Week Strength Reconstruction</div>
+      <h1>Comeback Blueprint</h1>
+      <div class="subtitle">Train with purpose. Progress with patience.</div>
+    </div>
+    <div class="version-badge">v0.2.0 Beta</div>
+  </header>
+
+  <div id="storageNotice" class="notice hidden"></div>
+  <nav class="week-wrap" aria-label="Training weeks"><div id="weekStrip" class="week-strip"></div></nav>
+  <section id="phaseBanner" class="phase-banner"></section>
+  <nav id="tabs" class="tabs"></nav>
+  <div class="toolbar">
+    <button id="exportBtn">Export data</button>
+    <button id="importBtn">Import data</button>
+    <button id="resetWeekBtn">Reset selected week</button>
+    <input id="importFile" type="file" accept="application/json" hidden />
+  </div>
+
+  <main id="main"></main>
+
+  <section class="rules">
+    <div class="eyebrow">Program Lock</div>
+    <h2>The workout structure does not change</h2>
+    <p><b>Upper A / Lower A / Upper B / Lower B</b> stays fixed. Upper days retain antagonistic push/pull pairing and every exercise uses exactly two working sets. Upper-body training remains calisthenics-only for Weeks 0–12. Dumbbells, the bench, and slant board appear only as optional lower-body variations from the displayed unlock week. There are no weighted pull-ups or weighted dips.</p>
+  </section>
+
+  <section class="rules">
+    <div class="eyebrow">Progression Rules</div>
+    <h2>How an exercise clears its blueprint</h2>
+    <ol>
+      <li><b>Ready:</b> both working sets reach the current ceiling at effort 3 or easier for two sessions in a row.</li>
+      <li><b>Still hard:</b> ceiling reps at effort 4–5 do not count. Hold the variation until the work feels Medium or easier.</li>
+      <li><b>Fast track:</b> if the very first logged session already clears the ceiling at effort 3 or easier, move to the next variation immediately.</li>
+      <li><b>Reset:</b> SOLID and confirmation history are scoped to the current phase and current variation.</li>
+    </ol>
+  </section>
+
+  <section class="safety">
+    <div class="eyebrow">Safety Note</div>
+    <h2>Stiffness is not the same as pain</h2>
+    <p>Mild stiffness that eases as you warm up is common during a return from prolonged sitting. Stop or regress an exercise if you feel sharp, radiating, worsening, or neurologic symptoms, or if pain changes your movement. This tracker is not medical care.</p>
+  </section>
+
+  <footer class="footer">Comeback Blueprint · v0.2.0 Beta</footer>
+</div>
+<nav class="bottom-nav" aria-label="Primary navigation">
+  <button data-view="workout" class="active"><span class="nav-icon">🏋️</span>Workout</button>
+  <button data-view="progress"><span class="nav-icon">📈</span>Progress</button>
+  <button data-view="exercises"><span class="nav-icon">📚</span>Exercises</button>
+  <button data-view="settings"><span class="nav-icon">⚙️</span>Settings</button>
+</nav>
+
+<script>
+(() => {
+"use strict";
+
+const PHASES = {
+  reactivation:{label:"Reactivation",weeks:[0],focus:"Rebuild movement patterns and tissue tolerance. Regressions are the plan."},
+  foundation:{label:"Foundation",weeks:[1,2,3,4],focus:"Establish clean form and build toward each rep ceiling."},
+  accumulation:{label:"Accumulation",weeks:[5,6,7,8],focus:"Emphasize the second and third exercises while pushing unsolid work toward the ceiling."},
+  intensification:{label:"Intensification",weeks:[9,10,11,12],focus:"Use harder calisthenics variations for upper body and optional, gradual lower-body loading where appropriate."}
+};
+
+const CAT = {
+  compound:{
+    targets:{reactivation:[3,6],foundation:[6,10],accumulation:[8,12],intensification:[10,15]},
+    tempo:"3-count lowering, controlled up",rest:"90–120 sec",unit:"reps"
+  },
+  pike:{
+    targets:{reactivation:[3,5],foundation:[5,8],accumulation:[6,10],intensification:[8,12]},
+    tempo:"3-count lowering, controlled up",rest:"90–120 sec",unit:"reps"
+  },
+  lower:{
+    targets:{reactivation:[5,8],foundation:[8,12],accumulation:[10,15],intensification:[12,15]},
+    tempo:"2-count lowering, controlled up",rest:"60–90 sec",unit:"reps"
+  },
+  core:{
+    targets:{reactivation:[15,20],foundation:[20,30],accumulation:[30,45],intensification:[45,60]},
+    tempo:"Steady brace, no rush",rest:"45–60 sec",unit:"sec"
+  },
+  thoracic:{
+    targets:{reactivation:[3,5],foundation:[8,10],accumulation:[15,20],intensification:[20,30]},
+    tempo:"2-count squeeze at top, controlled down",rest:"45–60 sec",
+    unitByPhase:{reactivation:"reps",foundation:"reps",accumulation:"sec",intensification:"sec"}
+  }
+};
+
+const V = (name,desc,opts={}) => ({name,desc,minWeek:opts.minWeek||0,equipment:opts.equipment||"Bodyweight",video:"https://www.youtube.com/results?search_query="+encodeURIComponent(name+" proper form")});
+
+const EX = {
+ pushup:{type:"Compound push",cat:"compound",vars:[
+  V("Push-Up","Start in a straight plank with hands slightly wider than shoulders. Lower the chest between the hands while keeping ribs and hips controlled, then press the floor away."),
+  V("Archer Push-Up","Use a wide hand position. Shift most of your body weight toward one bent arm while the opposite arm stays straighter, then alternate sides."),
+  V("Decline Push-Up","Place the feet on a stable raised surface and perform a rigid-body push-up, increasing the load on the shoulders and upper chest.")
+ ]},
+ row:{type:"Compound pull",cat:"compound",vars:[
+  V("Inverted Row","Hang under a secure bar with the body straight. Pull the chest toward the bar by driving the elbows back, then lower under control."),
+  V("Feet-Elevated Inverted Row","Place the feet on the bench while rowing the chest toward the bar. Keep the body rigid and control the lowering phase."),
+  V("Archer Row","Row toward one hand while the opposite arm stays straighter, shifting most of the pulling demand to one side.")
+ ]},
+ pullup:{type:"Vertical pull",cat:"compound",vars:[
+  V("L-Sit Pull-Up","Hang with straight legs held in front around hip height. Keep the knees locked and torso quiet while pulling the upper chest toward the bar, then lower under control."),
+  V("Paused L-Sit Pull-Up","Perform an L-sit pull-up and pause briefly near the top without losing the leg position or shoulder control."),
+  V("Slow-Eccentric L-Sit Pull-Up","Pull up normally, then take about five seconds to lower while maintaining the L-sit and avoiding any swing."),
+  V("Chest-to-Bar L-Sit Pull-Up","Maintain the L-sit while pulling higher so the upper chest approaches or lightly touches the bar."),
+  V("Uneven-Grip L-Sit Pull-Up","Keep the L-sit while one hand takes a slightly higher or more demanding grip. Alternate sides and keep the movement controlled.")
+ ]},
+ pikeD1:{type:"Vertical push",cat:"pike",vars:[
+  V("Pike Push-Up","Start with hips high in an inverted-V. Bend the elbows and lower the head toward the floor slightly ahead of the hands, then press back up."),
+  V("Deficit Pike Push-Up","Elevate the hands on stable blocks so the head can travel lower than the hands, increasing range of motion.")
+ ]},
+ plankD1:{type:"Core hold",cat:"core",vars:[
+  V("Plank","Support yourself on forearms and toes, squeeze glutes, and keep ribs, pelvis, and head aligned without sagging."),
+  V("Side Plank","Support the body on one forearm and the side of one foot, lifting the hips until the body forms a straight line.")
+ ]},
+ squat:{type:"Squat",cat:"lower",vars:[
+  V("Bodyweight Squat","Sit the hips down between the feet while the knees track over the toes, then stand tall without collapsing inward."),
+  V("Pause Squat","Lower into a controlled squat, hold the bottom position without relaxing, then stand smoothly."),
+  V("Goblet Squat","Hold one dumbbell vertically at the chest and squat with a controlled torso and full-foot pressure.",{minWeek:5,equipment:"Dumbbell"}),
+  V("Slant-Board Goblet Squat","Stand securely on the slant board with heels elevated, hold a dumbbell at the chest, and squat through a comfortable knee-forward range.",{minWeek:5,equipment:"Dumbbell + slant board"}),
+  V("Assisted Pistol Squat","Hold a stable support, extend one leg forward, and lower on the working leg with only as much assistance as needed.",{minWeek:9}),
+  V("Pistol Squat","Balance on one leg, extend the other leg forward, and lower under control before standing.",{minWeek:9})
+ ]},
+ slrdl:{type:"Hinge",cat:"lower",vars:[
+  V("Single-Leg RDL","Stand on one leg, send the free leg back, and hinge at the hip while keeping the spine long. Return by driving the standing hip forward."),
+  V("Dumbbell Single-Leg RDL","Hold one or two light dumbbells and use the same single-leg hinge. Add load only while balance and spinal position remain clean.",{minWeek:5,equipment:"Dumbbell"})
+ ]},
+ hollowD2:{type:"Core hold",cat:"core",vars:[
+  V("Hollow Hold","Lie on your back, gently flatten the low back, lift the shoulders and legs, and hold a curved hollow-body shape."),
+  V("Arms-Extended Hollow Hold","Maintain the hollow shape while reaching the arms overhead, increasing the lever length.")
+ ]},
+ thoracic:{type:"Thoracic extensor",cat:"thoracic",vars:[
+  V("Thoracic Extensor Work","Use the phase-specific bodyweight movement shown below. Move from the upper back and shoulder blades rather than cranking the low back.")
+ ]},
+ dips:{type:"Compound push",cat:"compound",vars:[
+  V("Dips","Support yourself on parallel bars, lower by bending the elbows while keeping the shoulders controlled, then press back to locked-out support."),
+  V("Paused Dips","Pause briefly at a comfortable bottom position, keep the shoulders stable, then press smoothly to support."),
+  V("Tempo Dips","Use a slow three-to-five-second lowering phase, stay controlled at the bottom, and press up without bouncing.")
+ ]},
+ chin:{type:"Vertical pull",cat:"compound",vars:[
+  V("Chin-Up","Hang with palms facing you. Pull the chest toward the bar while keeping the body quiet, then lower slowly."),
+  V("Paused Chin-Up","Pause near the top with the chest lifted and shoulders controlled, then lower without swinging."),
+  V("Chest-to-Bar Chin-Up","Pull higher while keeping the body quiet so the upper chest approaches the bar.")
+ ]},
+ pikeD3:{type:"Vertical push",cat:"pike",vars:[
+  V("Pike Push-Up","Start with hips high in an inverted-V. Lower the head toward the floor just ahead of the hands, then press up."),
+  V("Deficit Pike Push-Up","Elevate the hands on stable blocks to increase range of motion."),
+  V("Wall Handstand Push-Up","In a stable wall-supported handstand, lower the head under control and press back up. Use partial range first.")
+ ]},
+ rowD3:{type:"Compound pull",cat:"compound",vars:[
+  V("Inverted Row","Hang under a secure bar with a straight body and pull the chest toward the bar."),
+  V("Feet-Elevated Inverted Row","Elevate the feet on the bench, keep a rigid body line, and pull the chest toward the bar."),
+  V("Archer Row","Shift toward one hand while rowing, keeping the opposite arm straighter.")
+ ]},
+ hollowD3:{type:"Core hold",cat:"core",vars:[
+  V("Hollow Hold","Lie on your back, flatten the low back, raise the shoulders and legs, and hold a curved body shape."),
+  V("Hollow Rock","Maintain a rigid hollow shape while gently rocking from shoulders to hips without changing the body position.")
+ ]},
+ lunge:{type:"Lunge",cat:"lower",vars:[
+  V("Reverse Lunge","Step one foot backward, lower both knees with control, then drive through the front foot to stand."),
+  V("Bulgarian Split Squat","Place the rear foot on a stable bench and lower mostly through the front leg before standing.",{minWeek:5,equipment:"Bench"}),
+  V("Dumbbell Bulgarian Split Squat","Hold light dumbbells at the sides while performing the rear-foot-elevated split squat. Increase load gradually.",{minWeek:9,equipment:"Dumbbells + bench"})
+ ]},
+ bridge:{type:"Hip extension",cat:"lower",vars:[
+  V("Single-Leg Glute Bridge","Lie on your back with one foot planted. Lift the hips by squeezing the planted-side glute while keeping the pelvis level."),
+  V("Hip Thrust","Support the upper back on a bench, drive the hips upward, and finish with the ribs down and glutes squeezed.",{minWeek:5,equipment:"Bench"}),
+  V("Dumbbell Hip Thrust","Place a dumbbell securely across the hips and perform controlled hip thrusts without overextending the low back.",{minWeek:9,equipment:"Dumbbell + bench"})
+ ]},
+ plankD4:{type:"Core hold",cat:"core",vars:[
+  V("Plank","Hold a straight line from head to heels on forearms and toes."),
+  V("Plank Shoulder Taps","From a high plank, tap the opposite shoulder while resisting trunk rotation."),
+  V("Side Plank","Support the body on one forearm and the side of one foot with hips elevated.")
+ ]}
+};
+
+const DAYS = [
+ {id:"d1",label:"Day 1 · Upper A",groups:[
+  {pair:"Pair A",items:["pushup","row"],instruction:"Set 1 of Push-Up → Set 1 of Inverted Row → rest 90–120s → Set 2 the same way."},
+  {pair:"Pair B",items:["pullup","pikeD1"],instruction:"Set 1 of L-Sit Pull-Up → Set 1 of Pike Push-Up → rest 90–120s → Set 2 the same way."},
+  {items:["plankD1"]}
+ ]},
+ {id:"d2",label:"Day 2 · Lower A",groups:[{items:["squat","slrdl","hollowD2","thoracic"]}]},
+ {id:"d3",label:"Day 3 · Upper B",groups:[
+  {pair:"Pair A",items:["dips","chin"],instruction:"Set 1 of Dips → Set 1 of Chin-Ups → rest 90–120s → Set 2 the same way."},
+  {pair:"Pair B",items:["pikeD3","rowD3"],instruction:"Set 1 of Pike Push-Up → Set 1 of Inverted Row → rest 90–120s → Set 2 the same way."},
+  {items:["hollowD3"]}
+ ]},
+ {id:"d4",label:"Day 4 · Lower B",groups:[{items:["lunge","bridge","plankD4","thoracic"]}]},
+ {id:"recovery",label:"Off-Day Recovery",recovery:true}
+];
+
+const thoracicPhase = {
+ reactivation:"Prone Y-T-W raises, no weight. Lie face down. Raise the arms overhead in a Y, straight out in a T, then bend the elbows into a W. Move slowly and squeeze the shoulder blades.",
+ foundation:"Prone Y-T-W raises with a longer pause in each position. Keep the neck long and avoid turning the movement into a low-back arch.",
+ accumulation:"Superman hold. Lie face down and lift the arms and legs slightly while reaching long. Keep the lift modest and feel the upper-back extensors work.",
+ intensification:"Controlled prone thoracic extension with the torso supported near a bench edge, or a longer-lever Superman hold. Keep the low back comfortable."
+};
+
+const recovery = {
+ dynamic:[
+  ["90/90 Hip Switches","Sit with both knees bent and rotate them side to side while keeping the movement controlled."],
+  ["Cat-Cow","On hands and knees, gently alternate between spinal flexion and extension."],
+  ["Thoracic Rotations","From hands and knees or side-lying, rotate the upper back while the pelvis stays controlled."],
+  ["Wall Slides","Slide the forearms or hands upward against a wall while keeping ribs from flaring."],
+  ["Ankle Circles","Move each ankle slowly through comfortable circles in both directions."]
+ ],
+ mobility:[
+  ["World’s Greatest Stretch","Use a long lunge, place one hand down, and rotate the other arm toward the ceiling."],
+  ["Couch Stretch","Place one knee near a wall or bench and gently lengthen the front of the hip and thigh."],
+  ["Child’s Pose","Sit the hips toward the heels and reach the arms forward while breathing into the back."],
+  ["McGill Curl-Up","Keep one knee bent and one straight, brace, and lift only the head and shoulders slightly without flattening the lumbar spine."],
+  ["Bird Dog","From hands and knees, reach the opposite arm and leg long without rotating the trunk."],
+  ["Seated Thoracic Extension","Sit tall and extend the upper back over a chair back without overextending the low back."],
+  ["Shoulder Dislocates","Use a wide grip on a dowel or band and move it overhead through a comfortable range."],
+  ["DB External Rotation","With the elbow supported or tucked, rotate a very light dumbbell outward under control."],
+  ["Wall Angels","Keep the back and arms near a wall while sliding the arms upward without rib flare."],
+  ["Doorway Pec Stretch","Place a forearm on a doorway and gently turn away to stretch the chest."],
+  ["Wrist Extension Stretch","With the elbow straight, gently extend the wrist and fingers using the opposite hand."],
+  ["Slant Board Calf / Tibialis Raises","Alternate controlled calf raises and toe raises to train both sides of the lower leg."]
+ ]
+};
+
+const STORAGE_KEY = "comebackBlueprint.v1";
+const defaultState = {week:0,tab:"d1",logs:{},variations:{},solid:{},history:{},recovery:{},stiffness:{},sessionsCompleted:{}};
+let state = structuredClone(defaultState);
+let storageOK = true;
+let appView = "workout";
+let guided = false;
+let guidedIndex = 0;
+let workoutFinished = false;
+
+function phaseForWeek(w){ return w===0?"reactivation":w<=4?"foundation":w<=8?"accumulation":"intensification"; }
+function unitFor(ex,phase){ const c=CAT[EX[ex].cat]; return c.unitByPhase ? c.unitByPhase[phase] : c.unit; }
+function key(w,d,e){ return `${w}|${d}|${e}`; }
+function scopeKey(phase,e,varIndex){ return `${phase}|${e}|${varIndex}`; }
+
+function safeLoad(){
+ return Promise.race([
+  Promise.resolve().then(() => {
+    try{
+      const raw=localStorage.getItem(STORAGE_KEY);
+      if(raw) return JSON.parse(raw);
+      return structuredClone(defaultState);
+    }catch(err){ throw err; }
+  }),
+  new Promise((_,rej)=>setTimeout(()=>rej(new Error("Storage timed out")),600))
+ ]).catch(() => {
+   storageOK=false;
+   showNotice("Your saved data could not be loaded. The app is running in temporary mode; export your data if storage becomes available.",false);
+   return structuredClone(defaultState);
+ });
+}
+function safeSave(){
+ try{
+   localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+   storageOK=true;
+   return true;
+ }catch(err){
+   storageOK=false;
+   showNotice("Changes are visible, but this browser could not save them. Storage may be full or blocked.",false);
+   return false;
+ }
+}
+function showNotice(msg,ok=false){
+ const n=document.getElementById("storageNotice"); n.textContent=msg;n.className="notice"+(ok?" ok":"");
+}
+function hideNotice(){document.getElementById("storageNotice").classList.add("hidden")}
+
+function render(){
+ renderWeeks(); renderPhase(); renderTabs(); renderMain(); renderBottomNav();
+}
+function renderBottomNav(){
+ document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===appView));
+ const workoutUI=appView==="workout";
+ document.querySelector(".week-wrap").classList.toggle("hidden",!workoutUI||guided||workoutFinished);
+ document.getElementById("phaseBanner").classList.toggle("hidden",!workoutUI||guided||workoutFinished);
+ document.getElementById("tabs").classList.toggle("hidden",!workoutUI||guided||workoutFinished);
+}
+function dayExercises(day){return day.groups.flatMap(g=>g.items)}
+function dayFocus(){const p=phaseForWeek(state.week);return PHASES[p].focus+" Leave one clean rep in reserve and stop before technique breaks down."}
+function previousLog(ex){
+ for(let w=state.week-1;w>=0;w--){const l=state.logs[key(w,state.tab,ex)];if(l&&l.s1!==""&&l.s2!=="")return `${l.s1} · ${l.s2}`}
+ return "No previous result";
+}
+function renderWeeks(){
+ const el=document.getElementById("weekStrip"); el.innerHTML="";
+ for(let w=0;w<=12;w++){
+  const p=phaseForWeek(w), b=document.createElement("button");
+  b.className="week-btn"+(state.week===w?" active":""); b.dataset.phase=p; b.textContent=w;
+  b.setAttribute("aria-label",`Week ${w}, ${PHASES[p].label}`);
+  b.onclick=()=>{state.week=w;guided=false;workoutFinished=false;safeSave();render()};
+  el.appendChild(b);
+ }
+ setTimeout(()=>el.querySelector(".active")?.scrollIntoView({inline:"center",block:"nearest"}),0);
+}
+function renderPhase(){
+ const p=phaseForWeek(state.week), x=PHASES[p];
+ document.getElementById("phaseBanner").innerHTML=`<div class="phase-number">${state.week}</div><div><div class="eyebrow">${x.label}</div><b>${x.focus}</b></div>`;
+}
+function renderTabs(){
+ const el=document.getElementById("tabs");el.innerHTML="";
+ DAYS.forEach(d=>{
+  const b=document.createElement("button");b.className="tab"+(state.tab===d.id?" active":"");b.textContent=d.label;
+  b.onclick=()=>{state.tab=d.id;guided=false;workoutFinished=false;safeSave();renderMain();renderTabs();renderBottomNav()};el.appendChild(b);
+ });
+}
+function variationKey(ex){ return `${state.tab}|${ex}`; }
+function isVariationAvailable(v){ return state.week >= (v.minWeek||0); }
+function highestAvailableIndex(ex){
+ let max=0; EX[ex].vars.forEach((v,i)=>{ if(isVariationAvailable(v)) max=i; }); return max;
+}
+function currentVarIndex(ex){
+ const k=variationKey(ex), raw=Number(state.variations[k] ?? 0);
+ const clamped=Math.max(0,Math.min(EX[ex].vars.length-1,Number.isFinite(raw)?raw:0));
+ return Math.min(clamped,highestAvailableIndex(ex));
+}
+function getLog(ex){
+ const k=key(state.week,state.tab,ex);
+ return state.logs[k] || {s1:"",e1:"",s2:"",e2:"",notes:""};
+}
+function isComplete(log){return log.s1!==""&&log.s2!==""&&log.e1!==""&&log.e2!==""}
+function evaluation(ex,log){
+ const phase=phaseForWeek(state.week), ceiling=CAT[EX[ex].cat].targets[phase][1];
+ if(!isComplete(log)) return {type:"",text:"Log both sets and effort scores to evaluate progression."};
+ const hit=Number(log.s1)>=ceiling&&Number(log.s2)>=ceiling;
+ const easy=Number(log.e1)<=3&&Number(log.e2)<=3;
+ const v=currentVarIndex(ex), sk=scopeKey(phase,ex,v);
+ const sessions=state.history[sk]||[];
+ if(hit&&!easy) return {type:"hard",text:"Reps hit target, but still feels hard — hold here until it’s Medium or easier."};
+ if(hit&&easy){
+   const first=sessions.length===0;
+   if(first) return v<EX[ex].vars.length-1 ? {type:"fast",text:"Already above target — you may choose the next available variation."} : {type:"ready",text:"Already above target on the final listed variation — keep mastering clean reps, tempo, and control."};
+   const previous=sessions[sessions.length-1];
+   if(previous?.qualified) return {type:"ready",text:v<EX[ex].vars.length-1?"Ready to progress — both sets cleared the ceiling at Medium or easier for two sessions in a row. You decide whether to change variation.":"Final listed variation is mastered for this phase. Keep building quality or remain here."};
+   return {type:"",text:"One qualifying session recorded. Repeat this result once more to confirm."};
+ }
+ const floor=CAT[EX[ex].cat].targets[phase][0];
+ if(Number(log.s1)<floor&&Number(log.s2)<floor) return {type:"hard",text:"Both sets are below the target floor. Use an easier setup or regression next session."};
+ return {type:"",text:"Keep building clean reps within the current target range."};
+}
+function commitHistory(ex,log){
+ if(!isComplete(log)) return;
+ const phase=phaseForWeek(state.week), ceiling=CAT[EX[ex].cat].targets[phase][1],v=currentVarIndex(ex);
+ const sk=scopeKey(phase,ex,v), sessionId=key(state.week,state.tab,ex);
+ state.history[sk]=state.history[sk]||[];
+ const qualified=Number(log.s1)>=ceiling&&Number(log.s2)>=ceiling&&Number(log.e1)<=3&&Number(log.e2)<=3;
+ const rec={sessionId,week:state.week,qualified,s1:Number(log.s1),s2:Number(log.s2),e1:Number(log.e1),e2:Number(log.e2),at:new Date().toISOString()};
+ const idx=state.history[sk].findIndex(x=>x.sessionId===sessionId);
+ if(idx>=0) state.history[sk][idx]=rec; else state.history[sk].push(rec);
+}
+function setVariation(ex,newIndex){
+ const old=currentVarIndex(ex), bounded=Math.max(0,Math.min(EX[ex].vars.length-1,newIndex));
+ if(!isVariationAvailable(EX[ex].vars[bounded])){ showNotice(`That variation becomes available in week ${EX[ex].vars[bounded].minWeek}.`,false); return; }
+ state.variations[variationKey(ex)]=bounded;
+ if(old!==bounded){
+   const p=phaseForWeek(state.week);
+   delete state.solid[scopeKey(p,ex,bounded)];
+ }
+ safeSave();renderMain();
+}
+function saveField(ex,field,val){
+ const k=key(state.week,state.tab,ex),log=getLog(ex);log[field]=val;state.logs[k]=log;commitHistory(ex,log);
+ safeSave();renderMain();
+}
+function toggleSolid(ex,checked){
+ const sk=scopeKey(phaseForWeek(state.week),ex,currentVarIndex(ex));state.solid[sk]=checked;safeSave();renderMain();
+}
+function renderCard(ex,paired=false){
+ const item=EX[ex], phase=phaseForWeek(state.week), cat=CAT[item.cat], target=cat.targets[phase],unit=unitFor(ex,phase);
+ const vi=currentVarIndex(ex), variation=item.vars[vi], log=getLog(ex), evaln=evaluation(ex,log);
+ const sk=scopeKey(phase,ex,vi), solid=!!state.solid[sk];
+ const badge = solid?`<span class="badge solid">SOLID</span>`:
+   evaln.type?`<span class="badge ${evaln.type}">${evaln.type==="ready"?"READY":evaln.type==="fast"?"FAST TRACK":"HOLD"}</span>`:"";
+ const rest = paired ? "Pair-level rest" : cat.rest;
+ const thoracicText = ex==="thoracic" ? `<p><b>Phase movement:</b> ${thoracicPhase[phase]}</p>` : "";
+ const warm = Math.max(1,Math.round(target[1]/2));
+ const nextName=item.vars[vi+1]?.name;
+ return `<article class="card ${evaln.type==="ready"||evaln.type==="fast"?"ready":""} ${solid?"solid":""}" data-ex="${ex}">
+  <div class="card-head"><div class="card-title"><h3>${variation.name}</h3><small>${item.type}</small></div>${badge}</div>
+  <div class="spec-grid">
+   <div class="spec"><b>Target × 2</b><span>${target[0]}–${target[1]} ${unit}</span></div>
+   <div class="spec"><b>Tempo</b><span>${cat.tempo}</span></div>
+   <div class="spec"><b>Rest</b><span>${rest}</span></div>
+   <div class="spec"><b>Effort</b><span>1–5 each set</span></div>
+  </div>
+  <p class="desc">${variation.desc}</p>
+  ${thoracicText}
+  <button class="detail-toggle" data-detail="${ex}">Description, demo & guidance ▾</button>
+  <div class="details" id="detail-${ex}">
+   <p><a href="${variation.video}" target="_blank" rel="noopener">Search for a video demonstration ↗</a></p>
+   <div class="warmup"><b>Warm-up round, untracked:</b> about ${warm} ${unit} at easy effort before the two working sets.</div>
+  </div>
+  <div class="variation">
+   <button data-var="${ex}" data-dir="-1" ${vi===0?"disabled":""}>◂ Back</button>
+   <select class="variation-select" data-var-select="${ex}" aria-label="Choose ${item.type} variation">
+    ${item.vars.map((v,i)=>`<option value="${i}" ${i===vi?"selected":""} ${!isVariationAvailable(v)?"disabled":""}>${i+1}. ${v.name}${!isVariationAvailable(v)?` — unlocks week ${v.minWeek}`:""}</option>`).join("")}
+   </select>
+   <button data-var="${ex}" data-dir="1" ${vi>=highestAvailableIndex(ex)?"disabled":""}>${item.vars[vi+1]&&isVariationAvailable(item.vars[vi+1])?`Next: ${item.vars[vi+1].name} ▸`:"No next option yet"}</button>
+   <span class="var-count">Variation ${vi+1}/${item.vars.length}</span>
+  </div>
+  <div class="equipment-note">Equipment: ${variation.equipment}${variation.minWeek?` · introduced from week ${variation.minWeek}`:""}</div>
+  <div class="sets">
+   ${setRow(1,log.s1,log.e1,unit)}
+   ${setRow(2,log.s2,log.e2,unit)}
+  </div>
+  <div class="progress-message ${evaln.type}">${evaln.text}</div>
+  <div class="actions">
+   <label class="solid-toggle"><input type="checkbox" data-solid="${ex}" ${solid?"checked":""}> Mark SOLID manually</label>
+   <span class="save-state">${storageOK?"Saved on this device":"Temporary mode"}</span>
+  </div>
+ </article>`;
+}
+function setRow(n,reps,effort,unit){
+ return `<div class="set-row">
+  <div class="set-label">SET ${n}</div>
+  <label>${unit}<input data-field="s${n}" type="number" min="0" inputmode="numeric" value="${reps}"></label>
+  <label>Effort<select data-field="e${n}">
+   <option value="">—</option>${[1,2,3,4,5].map(x=>`<option value="${x}" ${String(effort)===String(x)?"selected":""}>${x} · ${["","Very Easy","Easy","Medium","Hard","Max / Failure"][x]}</option>`).join("")}
+  </select></label>
+ </div>`;
+}
+function renderMain(){
+ const el=document.getElementById("main"),day=DAYS.find(d=>d.id===state.tab);
+ renderBottomNav();
+ if(appView==="progress"){renderProgress(el);return}
+ if(appView==="exercises"){renderExerciseLibrary(el);return}
+ if(appView==="settings"){renderSettings(el);return}
+ if(day.recovery){el.innerHTML=renderRecovery();bindRecovery();return}
+ const exs=dayExercises(day);
+ if(workoutFinished){
+  const completed=exs.filter(e=>isComplete(getLog(e))).length;
+  el.innerHTML=`<section class="hero complete-screen"><div class="complete-mark">✓</div><div class="eyebrow">Mission Complete</div><h2>${day.label.replace(/^Day \d · /,"")}</h2><p>${completed} exercises · ${completed*2} working sets logged</p><p><b>Quality before quantity.</b></p><button class="primary" id="doneBtn">Return to workout</button></section>`;
+  document.getElementById("doneBtn").onclick=()=>{workoutFinished=false;guided=false;guidedIndex=0;render()};return;
+ }
+ if(!guided){
+  const completed=exs.filter(e=>isComplete(getLog(e))).length;
+  el.innerHTML=`<section class="hero"><div class="eyebrow">Week ${state.week} · ${day.label}</div><h2>Today's Workout</h2><div class="hero-focus"><b>Today's Focus</b><br>${dayFocus()}</div><p>${exs.length} exercises · exactly two tracked working sets each</p><button class="primary" id="startWorkout">${completed?"Continue Workout":"Start Workout"}</button></section>`;
+  document.getElementById("startWorkout").onclick=()=>{guided=true;guidedIndex=Math.max(0,exs.findIndex(e=>!isComplete(getLog(e))));render()};return;
+ }
+ guidedIndex=Math.max(0,Math.min(guidedIndex,exs.length-1));
+ const ex=exs[guidedIndex],pct=((guidedIndex+1)/exs.length)*100;
+ el.innerHTML=`<div class="guided-top"><button class="secondary" id="exitGuided">← Exit</button><div class="guided-progress"><span style="width:${pct}%"></span></div><b>${guidedIndex+1}/${exs.length}</b></div>
+ <div class="eyebrow">${day.label} · Exercise ${guidedIndex+1}</div>
+ <div class="history-item"><span>Last session</span><b>${previousLog(ex)}</b></div>
+ <section class="guided-card">${renderCard(ex,false)}</section>
+ <div class="guided-actions"><button class="secondary" id="prevEx" ${guidedIndex===0?"disabled":""}>Previous</button><button class="secondary" id="nextEx">${guidedIndex===exs.length-1?"Finish Workout":"Next Exercise"}</button></div>`;
+ bindCards();
+ document.getElementById("exitGuided").onclick=()=>{guided=false;render()};
+ document.getElementById("prevEx").onclick=()=>{guidedIndex--;render()};
+ document.getElementById("nextEx").onclick=()=>{if(guidedIndex===exs.length-1){state.sessionsCompleted[`${state.week}|${state.tab}`]=new Date().toISOString();safeSave();workoutFinished=true}else guidedIndex++;render()};
+}
+function renderProgress(el){
+ let rows="";
+ for(let w=0;w<=12;w++){
+  const completed=DAYS.filter(d=>!d.recovery).filter(d=>state.sessionsCompleted[`${w}|${d.id}`]).length;
+  rows+=`<div class="history-item"><span><b>Week ${w}</b><br><small>${PHASES[phaseForWeek(w)].label}</small></span><span class="${completed===4?"status-done":"status-open"}">${completed}/4 workouts</span></div>`;
+ }
+ el.innerHTML=`<div class="section-title"><div class="eyebrow">Training Record</div><h2>Progress</h2></div>${rows}`;
+}
+function renderExerciseLibrary(el){
+ const used=[...new Set(DAYS.filter(d=>!d.recovery).flatMap(dayExercises))];
+ el.innerHTML=`<div class="section-title"><div class="eyebrow">Reference Manual</div><h2>Exercises</h2></div>`+used.map(ex=>{
+  const item=EX[ex];return `<details class="library-item"><summary>${item.vars[0].name} <small>· ${item.type}</small></summary><p>${item.vars[0].desc}</p><b>Variations</b><ol>${item.vars.map(v=>`<li>${v.name}${v.minWeek?` — week ${v.minWeek}+`:""}</li>`).join("")}</ol></details>`
+ }).join("");
+}
+function renderSettings(el){
+ el.innerHTML=`<div class="section-title"><div class="eyebrow">Application</div><h2>Settings</h2></div>
+ <section class="settings-card"><h3>Backup & Restore</h3><button class="secondary" id="settingsExport">Export Data</button><button class="secondary" id="settingsImport">Import Data</button><button class="secondary" id="settingsReset">Reset Selected Week</button></section>
+ <section class="settings-card"><h3>About</h3><div class="about-grid"><div><b>Version</b>v0.2.0 Beta</div><div><b>Build</b>CB-2026.07.001</div><div><b>Program</b>12-Week Comeback Blueprint</div><div><b>Workout Engine</b>1.0</div></div></section>`;
+ document.getElementById("settingsExport").onclick=()=>document.getElementById("exportBtn").click();
+ document.getElementById("settingsImport").onclick=()=>document.getElementById("importBtn").click();
+ document.getElementById("settingsReset").onclick=()=>document.getElementById("resetWeekBtn").click();
+}
+function summaryMetrics(day){
+ const exs=day.groups.flatMap(g=>g.items),completed=exs.filter(e=>isComplete(getLog(e))).length;
+ const solid=exs.filter(e=>state.solid[scopeKey(phaseForWeek(state.week),e,currentVarIndex(e))]).length;
+ const ready=exs.filter(e=>["ready","fast"].includes(evaluation(e,getLog(e)).type)).length;
+ return `<div class="metric"><b>${completed}/${exs.length}</b>logged</div><div class="metric"><b>${solid}</b>SOLID</div><div class="metric"><b>${ready}</b>ready</div><div class="metric"><b>${phaseForWeek(state.week).toUpperCase()}</b>phase</div>`;
+}
+function bindCards(){
+ document.querySelectorAll(".detail-toggle").forEach(b=>b.onclick=()=>document.getElementById("detail-"+b.dataset.detail).classList.toggle("open"));
+ document.querySelectorAll("[data-var]").forEach(b=>b.onclick=()=>setVariation(b.dataset.var,currentVarIndex(b.dataset.var)+Number(b.dataset.dir)));
+ document.querySelectorAll("[data-var-select]").forEach(s=>s.onchange=()=>setVariation(s.dataset.varSelect,Number(s.value)));
+ document.querySelectorAll(".card").forEach(card=>{
+  const ex=card.dataset.ex;
+  card.querySelectorAll("[data-field]").forEach(inp=>inp.onchange=()=>saveField(ex,inp.dataset.field,inp.value));
+ });
+ document.querySelectorAll("[data-solid]").forEach(c=>c.onchange=()=>toggleSolid(c.dataset.solid,c.checked));
+}
+function cardioTarget(){
+ const w=state.week,p=phaseForWeek(w);
+ if(p==="reactivation") return "10 minutes easy on the rower or incline treadmill.";
+ if(p==="foundation") return `${12+(w-1)*2}–${14+(w-1)*2} minutes, building gradually toward 20 minutes.`;
+ if(p==="accumulation") return "20–25 minutes. Optional intervals may begin in weeks 7–8.";
+ return "25–30 minutes steady, or structured interval work if recovery is good.";
+}
+function renderRecovery(){
+ const rk=`${state.week}`,r=state.recovery[rk]||{};
+ return `<section class="recovery">
+  <div class="eyebrow">Active Recovery · 2–3× / week</div><h2>Move first, condition second, hold last</h2>
+  <div class="recovery-step"><h3>1 · Dynamic warm-up (~5 min)</h3><div class="recovery-grid">${recovery.dynamic.map((x,i)=>checkItem("dyn"+i,x,r)).join("")}</div></div>
+  <div class="recovery-step"><h3>2 · VO₂ cardio</h3><p><b>This week:</b> ${cardioTarget()}</p>${checkItem("cardio",["Cardio session complete","Use the rower or incline treadmill at an intensity appropriate to the phase."],r)}</div>
+  <div class="recovery-step"><h3>3 · Full mobility circuit</h3><p>Static holds come after cardio, when tissues are warm.</p><div class="recovery-grid">${recovery.mobility.map((x,i)=>checkItem("mob"+i,x,r)).join("")}</div></div>
+ </section>
+ <section class="summary"><div class="eyebrow">Daily Readiness</div><h2>Back / hip stiffness</h2><p>Rate general stiffness, not pain.</p><div class="stiffness">${[1,2,3,4,5].map(n=>`<button data-stiff="${n}" class="${state.stiffness[rk]===n?"active":""}">${n}</button>`).join("")}</div></section>`;
+}
+function checkItem(id,x,r){return `<label class="check-item"><input type="checkbox" data-recovery="${id}" ${r[id]?"checked":""}><span><b>${x[0]}</b><br><small>${x[1]}</small></span></label>`}
+function bindRecovery(){
+ document.querySelectorAll("[data-recovery]").forEach(c=>c.onchange=()=>{
+  const k=String(state.week);state.recovery[k]=state.recovery[k]||{};state.recovery[k][c.dataset.recovery]=c.checked;safeSave();
+ });
+ document.querySelectorAll("[data-stiff]").forEach(b=>b.onclick=()=>{
+  state.stiffness[String(state.week)]=Number(b.dataset.stiff);safeSave();renderMain();
+ });
+}
+
+document.getElementById("exportBtn").onclick=()=>{
+ const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="comeback-blueprint-data.json";a.click();URL.revokeObjectURL(a.href);
+};
+document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
+document.getElementById("importFile").onchange=async e=>{
+ try{
+  const parsed=JSON.parse(await e.target.files[0].text());
+  state={...structuredClone(defaultState),...parsed};safeSave();showNotice("Import complete.",true);render();
+ }catch{showNotice("That file could not be imported. Choose a valid Comeback Blueprint JSON export.",false)}
+ e.target.value="";
+};
+document.getElementById("resetWeekBtn").onclick=()=>{
+ if(!confirm(`Reset all logs and recovery checks for week ${state.week}?`)) return;
+ const prefix=`${state.week}|`;
+ Object.keys(state.logs).filter(k=>k.startsWith(prefix)).forEach(k=>delete state.logs[k]);
+ delete state.recovery[String(state.week)];delete state.stiffness[String(state.week)];
+ Object.values(state.history).forEach(arr=>{for(let i=arr.length-1;i>=0;i--)if(arr[i].week===state.week)arr.splice(i,1)});
+ safeSave();render();showNotice(`Week ${state.week} was reset.`,true);
+};
+
+function installManifest(){
+ const icon=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" fill="#0F2536"/><path d="M30 30h132v132H30z" fill="none" stroke="#77D8E5" stroke-width="4"/><path d="M50 96h92M96 50v92" stroke="#FF8C42" stroke-width="8"/><text x="96" y="112" text-anchor="middle" font-size="56" font-family="monospace" fill="#F2F3EE">CB</text></svg>`;
+ const iconUrl="data:image/svg+xml;base64,"+btoa(icon);
+ const manifest={name:"Comeback Blueprint",short_name:"CB-12",start_url:location.href,display:"standalone",background_color:"#0F2536",theme_color:"#0F2536",icons:[{src:iconUrl,sizes:"192x192",type:"image/svg+xml"}]};
+ const link=document.createElement("link");link.rel="manifest";link.href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"}));document.head.appendChild(link);
+ const apple=document.createElement("link");apple.rel="apple-touch-icon";apple.href=iconUrl;document.head.appendChild(apple);
+}
+
+document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{appView=b.dataset.view;guided=false;workoutFinished=false;render()});
+
+safeLoad().then(s=>{
+ state={...structuredClone(defaultState),...s};
+ // Clamp saved variation indices from older builds so no exercise opens on an invalid/final option.
+ Object.keys(EX).forEach(ex=>{
+   DAYS.filter(d=>!d.recovery).forEach(d=>{
+     const k=`${d.id}|${ex}`;
+     if(k in state.variations) state.variations[k]=Math.max(0,Math.min(Number(state.variations[k])||0,EX[ex].vars.length-1));
+   });
+ });
+ safeSave(); render();
+});
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}
+})();
+</script>
+</body>
+</html>
