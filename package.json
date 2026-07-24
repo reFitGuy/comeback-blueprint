@@ -1,0 +1,10 @@
+{
+  "name": "comeback-blueprint",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/validate-program.mjs",
+    "serve": "python3 -m http.server 8080"
+  }
+}
